@@ -78,43 +78,47 @@ impl<R: Resource> Index<R> {
 		let max_chunk = guard.unwrap_or(256);
 		drop(guard);
 
-		(0u16..max_chunk).map_while(|index| {
-			let index_usize = usize::from(index);
-			let index_u8 = u8::try_from(index).unwrap();
+		(0u16..256)
+			.map(|index| {
+				let index_usize = usize::from(index);
+				let index_u8 = u8::try_from(index).unwrap();
 
-			// If we've already loaded this chunk index, use that.
-			let guard = self.chunks.lock().unwrap();
-			if let Some(chunk) = guard.get(index_usize) {
-				return Some(Ok((index_u8, chunk.clone())));
-			}
-			drop(guard);
-
-			// Try to build a new chunk.
-			let chunk = IndexChunk::new(
-				self.repository,
-				self.category,
-				index.try_into().unwrap(),
-				&*self.resource,
-			);
-
-			match chunk {
-				// Found an index - save it out to the cache.
-				Ok(chunk) => {
-					let mut guard = self.chunks.lock().unwrap();
-					guard.insert(index_usize, chunk.into());
-					Some(Ok((index_u8, guard[index_usize].clone())))
+				// If we've already loaded this chunk index, use that.
+				let guard = self.chunks.lock().unwrap();
+				if let Some(chunk) = guard.get(index_usize) {
+					return Some(Ok((index_u8, chunk.clone())));
 				}
+				drop(guard);
 
-				// No index was found for this chunk - mark index as the max chunk point so we don't do that again.
-				Err(Error::NotFound(_)) => {
-					*self.max_chunk.lock().unwrap() = Some(index);
-					None
+				// Try to build a new chunk.
+				let chunk = IndexChunk::new(
+					self.repository,
+					self.category,
+					index.try_into().unwrap(),
+					&*self.resource,
+				);
+
+				match chunk {
+					// Found an index - save it out to the cache.
+					Ok(chunk) => {
+						let mut guard = self.chunks.lock().unwrap();
+						let c = chunk.into();
+						guard.push(Arc::clone(&c));
+						Some(Ok((index_u8, c)))
+					}
+
+					// No index was found for this chunk - mark index as the max chunk point so we don't do that again.
+					Err(Error::NotFound(_)) => {
+						//*self.max_chunk.lock().unwrap() = Some(index);
+						None
+					}
+
+					// Some other error occured, surface it.
+					Err(error) => Some(Err(error)),
 				}
-
-				// Some other error occured, surface it.
-				Err(error) => Some(Err(error)),
-			}
-		})
+			})
+			.filter(|chunk| chunk.is_some())
+			.map(|chunk| chunk.unwrap())
 	}
 }
 
