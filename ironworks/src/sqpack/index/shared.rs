@@ -60,7 +60,7 @@ impl FileMetadata {
 		Self {
 			is_synonym: (input & 0b1) == 0b1,
 			data_file_id: ((input & 0b1110) >> 1) as u8,
-			offset: (input & !0xF) * 0x08,
+			offset: (input & !0xF),
 		}
 	}
 }

@@ -12,10 +12,10 @@ use super::{
 #[binread]
 #[derive(Debug)]
 #[br(little)]
-struct Entry {
-	hash: u64,
+pub struct Entry {
+	pub hash: u64,
 	#[br(pad_after = 4)]
-	file_metadata: FileMetadata,
+	pub file_metadata: FileMetadata,
 	// padding: u32,
 }
 
@@ -37,7 +37,7 @@ pub struct Index1 {
 		seek_before = SeekFrom::Start(index_header.index_data.offset.into()),
 		count = index_header.index_data.size / Entry::SIZE,
 	)]
-	indexes: Vec<Entry>,
+	pub indexes: Vec<Entry>,
 
 	#[br(calc = indexes.iter().map(|entry| (
 		entry.file_metadata.data_file_id,

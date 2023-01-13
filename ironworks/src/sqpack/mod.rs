@@ -10,7 +10,7 @@ mod sqpack;
 pub use {
 	block::{BlockMetadata, BlockPayload, BlockStream},
 	file::File,
-	index::Location,
+	index::{Index, IndexChunk, Location},
 	install::Install,
 	resource::Resource,
 	sqpack::SqPack,

@@ -36,7 +36,7 @@ pub struct AddCommand {
 	// unk1: [u8; 3]
 	/// File to modify.
 	#[br(pad_before = 3)]
-	file: SqPackFile,
+	pub file: SqPackFile,
 	/// Target file offset to start writing, in bytes.
 	#[br(map = |value: u32| value << 7)]
 	target_offset: u32,

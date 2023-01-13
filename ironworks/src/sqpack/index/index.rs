@@ -72,7 +72,7 @@ impl<R: Resource> Index<R> {
 		}
 	}
 
-	fn chunks(&self) -> impl Iterator<Item = Result<(u8, Arc<IndexChunk>)>> + '_ {
+	pub fn chunks(&self) -> impl Iterator<Item = Result<(u8, Arc<IndexChunk>)>> + '_ {
 		// Get the max known chunk ID. If we don't know it, we want to loop the full potential ID space (u8).
 		let guard = self.max_chunk.lock().unwrap();
 		let max_chunk = guard.unwrap_or(256);
@@ -119,7 +119,7 @@ impl<R: Resource> Index<R> {
 }
 
 #[derive(Debug)]
-enum IndexChunk {
+pub enum IndexChunk {
 	Index1(Index1),
 	Index2(Index2),
 }
